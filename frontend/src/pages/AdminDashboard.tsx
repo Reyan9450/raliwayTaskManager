@@ -18,7 +18,7 @@ import { PageSkeleton } from '../components/ui/SkeletonLoader'
 import { staggerContainer, staggerItem, fadeInUp } from '../animations/variants'
 
 export function AdminDashboard() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const { showToast } = useToast()
 
   const [projects, setProjects] = useState<Project[]>([])

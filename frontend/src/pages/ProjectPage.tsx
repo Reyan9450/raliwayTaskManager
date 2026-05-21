@@ -14,7 +14,6 @@ import { StatusBadge, PriorityBadge } from '../components/ui/Badge'
 import { Avatar } from '../components/ui/Avatar'
 import { PageSkeleton, SkeletonTaskCard } from '../components/ui/SkeletonLoader'
 import { fadeInUp, staggerContainer, staggerItem } from '../animations/variants'
-import React from 'react'
 
 export default function ProjectPage() {
   const { id: projectId } = useParams<{ id: string }>()
@@ -239,43 +238,7 @@ export default function ProjectPage() {
           accentText={accent.text}
           accentHoverRow={accent.hoverRow}
           onEdit={(task) => { setEditingTask(task); setModalOpen(true) }}
-        />
-      )}
-
-      {/* Task Modal */}
-      {isAdmin && modalOpen && (
-        <TaskModal
-          projectId={project._id}
-          project={project}
-          task={editingTask}
-          onClose={() => { setModalOpen(false); setEditingTask(null) }}
-        />
-      )}
-    </div>
-  )
-}
-
-function StatPill({ label, value, color }: {
-  label: string; value: number; color: 'slate' | 'indigo' | 'green' | 'red'
-}) {
-  const cls = {
-    slate:  'bg-slate-500/15 text-slate-400',
-    indigo: 'bg-indigo-500/15 text-indigo-400',
-    green:  'bg-green-500/15 text-green-400',
-    red:    'bg-red-500/15 text-red-400',
-  }[color]
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cls}`}>
-      {label} <span className="font-bold">{value}</span>
-    </span>
-  )
-}
-
-function ListView({ tasks, isAdmin, onEdit }: {
-  tasks: Task[]
-  isAdmin: boolean
-  onEdit: (task: Task) => void
-}) {
+        /> {
   return (
     <motion.div
       variants={staggerContainer}

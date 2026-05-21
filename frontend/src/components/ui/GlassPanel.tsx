@@ -8,6 +8,7 @@ interface GlassPanelProps {
   glow?: 'purple' | 'blue' | 'pink' | 'none'
   onClick?: () => void
   as?: 'div' | 'section' | 'article'
+  style?: React.CSSProperties
 }
 
 const glowMap = {
@@ -23,10 +24,12 @@ export function GlassPanel({
   hover = false,
   glow = 'none',
   onClick,
+  style,
 }: GlassPanelProps) {
   return (
     <motion.div
       onClick={onClick}
+      style={style}
       className={`
         glass rounded-2xl
         ${hover ? 'cursor-pointer transition-all duration-300 hover:bg-white/[0.09]' : ''}

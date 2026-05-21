@@ -8,7 +8,6 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { GlassPanel } from '../components/ui/GlassPanel'
 import { StatusBadge, PriorityBadge, OverdueBadge } from '../components/ui/Badge'
-import { Avatar } from '../components/ui/Avatar'
 import { PageSkeleton } from '../components/ui/SkeletonLoader'
 import { staggerContainer, staggerItem, fadeInUp } from '../animations/variants'
 
