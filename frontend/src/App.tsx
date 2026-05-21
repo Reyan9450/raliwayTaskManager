@@ -3,7 +3,7 @@ import { AuthProvider } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
 import { TaskProvider } from './context/TaskContext'
 import ProtectedRoute from './components/ProtectedRoute'
-import { Layout } from './components/Layout'
+import { AppLayout } from './layouts/AppLayout'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
@@ -16,13 +16,13 @@ export default function App() {
         <ToastProvider>
           <TaskProvider>
             <Routes>
-              <Route path="/login" element={<LoginPage />} />
+              <Route path="/login"    element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <Layout><DashboardPage /></Layout>
+                    <AppLayout><DashboardPage /></AppLayout>
                   </ProtectedRoute>
                 }
               />
@@ -30,12 +30,12 @@ export default function App() {
                 path="/projects/:id"
                 element={
                   <ProtectedRoute>
-                    <Layout><ProjectPage /></Layout>
+                    <AppLayout><ProjectPage /></AppLayout>
                   </ProtectedRoute>
                 }
               />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/"  element={<Navigate to="/dashboard" replace />} />
+              <Route path="*"  element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </TaskProvider>
         </ToastProvider>

@@ -4,30 +4,29 @@ interface SpinnerProps {
 }
 
 const sizeMap = {
-  sm: 'h-4 w-4 border-2',
-  md: 'h-8 w-8 border-2',
-  lg: 'h-12 w-12 border-4',
+  sm: 'h-4 w-4',
+  md: 'h-8 w-8',
+  lg: 'h-12 w-12',
 }
 
-/**
- * Reusable loading spinner.
- * Usage: <Spinner /> or <Spinner size="lg" />
- * Requirements: 11.2
- */
 export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
   return (
     <div
       role="status"
       aria-label="Loading"
-      className={`animate-spin rounded-full border-gray-200 border-t-blue-600 ${sizeMap[size]} ${className}`}
-    />
+      className={`${sizeMap[size]} ${className} relative`}
+    >
+      <div className={`absolute inset-0 rounded-full border-2 border-white/10`} />
+      <div className={`absolute inset-0 rounded-full border-2 border-transparent border-t-violet-500 animate-spin`} />
+    </div>
   )
 }
 
 export function PageSpinner() {
   return (
-    <div className="flex items-center justify-center h-64 w-full">
+    <div className="flex flex-col items-center justify-center h-64 w-full gap-3">
       <Spinner size="lg" />
+      <p className="text-xs text-slate-600 animate-pulse">Loading…</p>
     </div>
   )
 }

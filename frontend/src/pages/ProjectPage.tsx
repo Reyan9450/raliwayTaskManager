@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { getProjects, deleteProject } from '../api/projects'
 import type { Project, Task } from '../types'
 import { useTaskContext } from '../context/TaskContext'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
-import { KanbanBoard } from '../components/KanbanBoard'
-import { PageSpinner, Spinner } from '../components/Spinner'
-import { TaskModal } from '../components/TaskModal'
+import { KanbanBoard } from '../components/kanban/KanbanBoard'
+import { TaskModal } from '../components/kanban/TaskModal'
+import { GlassPanel } from '../components/ui/GlassPanel'
+import { GradientButton } from '../components/ui/GradientButton'
+import { StatusBadge, PriorityBadge } from '../components/ui/Badge'
+import { Avatar } from '../components/ui/Avatar'
+import { PageSkeleton, SkeletonTaskCard } from '../components/ui/SkeletonLoader'
+import { fadeInUp, staggerContainer, staggerItem } from '../animations/variants'
 
 export default function ProjectPage() {
   const { id: projectId } = useParams<{ id: string }>()
@@ -21,6 +27,7 @@ export default function ProjectPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [deletingProject, setDeletingProject] = useState(false)
+  const [view, setView] = useState<'kanban' | 'list'>('kanban')
 
   const isAdmin = user?.role === 'Admin'
   const tasks = projectId ? (tasksByProject[projectId] ?? []) : []
@@ -60,68 +67,146 @@ export default function ProjectPage() {
     }
   }
 
-  if (projectLoading) return <PageSpinner />
+  if (projectLoading) return <PageSkeleton />
   if (!project) return null
 
   const todo = tasks.filter((t) => t.status === 'Todo').length
   const inProgress = tasks.filter((t) => t.status === 'In Progress').length
   const done = tasks.filter((t) => t.status === 'Done').length
   const overdue = tasks.filter((t) => t.isOverdue).length
+  const completionPct = tasks.length === 0 ? 0 : Math.round((done / tasks.length) * 100)
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">{project.title}</h1>
-          {project.description && (
-            <p className="text-sm text-gray-500 mt-1">{project.description}</p>
-          )}
-          <p className="text-xs text-gray-400 mt-1">
-            {project.members.length} member{project.members.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-
-        {isAdmin && (
-          <div className="flex items-center gap-2">
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        className="flex items-start justify-between gap-4"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 mb-1">
             <button
               type="button"
-              onClick={() => { setEditingTask(null); setModalOpen(true) }}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              onClick={() => navigate('/dashboard')}
+              className="text-slate-500 hover:text-slate-300 transition-colors text-sm"
             >
-              + New Task
+              ← Dashboard
+            </button>
+            <span className="text-slate-700">/</span>
+            <span className="text-sm text-slate-400 truncate">{project.title}</span>
+          </div>
+          <h1 className="text-2xl font-black text-white truncate">{project.title}</h1>
+          {project.description && (
+            <p className="text-sm text-slate-500 mt-1">{project.description}</p>
+          )}
+          <div className="flex items-center gap-3 mt-2">
+            <span className="text-xs text-slate-600">
+              {project.members.length + 1} member{project.members.length !== 0 ? 's' : ''}
+            </span>
+            <span className="text-slate-700">·</span>
+            <span className="text-xs text-slate-600">{tasks.length} tasks</span>
+            {completionPct > 0 && (
+              <>
+                <span className="text-slate-700">·</span>
+                <span className="text-xs text-green-400 font-semibold">{completionPct}% complete</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {/* View toggle */}
+          <div className="flex items-center bg-white/5 rounded-xl p-1 border border-white/8">
+            <button
+              type="button"
+              onClick={() => setView('kanban')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                view === 'kanban'
+                  ? 'bg-violet-600 text-white shadow-glow-purple'
+                  : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              Board
             </button>
             <button
               type="button"
-              onClick={handleDeleteProject}
-              disabled={deletingProject}
-              className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none transition-colors disabled:opacity-50"
-              title="Delete project"
+              onClick={() => setView('list')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                view === 'list'
+                  ? 'bg-violet-600 text-white shadow-glow-purple'
+                  : 'text-slate-500 hover:text-slate-300'
+              }`}
             >
-              {deletingProject ? '…' : '🗑'}
+              List
             </button>
           </div>
-        )}
-      </div>
 
-      {/* Task summary bar */}
-      {tasks.length > 0 && (
-        <div className="flex flex-wrap gap-3 mb-6">
-          <SummaryPill label="Total" value={tasks.length} colour="gray" />
-          <SummaryPill label="Todo" value={todo} colour="gray" />
-          <SummaryPill label="In Progress" value={inProgress} colour="blue" />
-          <SummaryPill label="Done" value={done} colour="green" />
-          {overdue > 0 && <SummaryPill label="Overdue" value={overdue} colour="red" />}
+          {isAdmin && (
+            <>
+              <GradientButton
+                onClick={() => { setEditingTask(null); setModalOpen(true) }}
+                size="sm"
+                icon={<span>+</span>}
+              >
+                New Task
+              </GradientButton>
+              <GradientButton
+                onClick={handleDeleteProject}
+                disabled={deletingProject}
+                variant="danger"
+                size="sm"
+              >
+                {deletingProject ? '…' : 'Delete'}
+              </GradientButton>
+            </>
+          )}
         </div>
+      </motion.div>
+
+      {/* Progress bar */}
+      {tasks.length > 0 && (
+        <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+          <GlassPanel className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-4">
+                <StatPill label="Total" value={tasks.length} color="slate" />
+                <StatPill label="Todo" value={todo} color="slate" />
+                <StatPill label="In Progress" value={inProgress} color="indigo" />
+                <StatPill label="Done" value={done} color="green" />
+                {overdue > 0 && <StatPill label="Overdue" value={overdue} color="red" />}
+              </div>
+              <span className="text-sm font-bold text-gradient-purple">{completionPct}%</span>
+            </div>
+            <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
+              <motion.div
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${completionPct}%` }}
+                transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+              />
+            </div>
+          </GlassPanel>
+        </motion.div>
       )}
 
-      {/* Kanban board */}
+      {/* Board / List view */}
       {tasksLoading ? (
-        <div className="flex items-center justify-center h-40"><Spinner /></div>
-      ) : (
+        <div className="grid grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => <SkeletonTaskCard key={i} />)}
+        </div>
+      ) : view === 'kanban' ? (
         <KanbanBoard
           projectId={project._id}
           onEditTask={isAdmin ? (task) => { setEditingTask(task); setModalOpen(true) } : undefined}
+          onAddTask={isAdmin ? () => { setEditingTask(null); setModalOpen(true) } : undefined}
+        />
+      ) : (
+        <ListView
+          tasks={tasks}
+          isAdmin={isAdmin}
+          onEdit={(task) => { setEditingTask(task); setModalOpen(true) }}
         />
       )}
 
@@ -138,19 +223,100 @@ export default function ProjectPage() {
   )
 }
 
-function SummaryPill({ label, value, colour }: {
-  label: string; value: number; colour: 'gray' | 'blue' | 'green' | 'red'
+function StatPill({ label, value, color }: {
+  label: string; value: number; color: 'slate' | 'indigo' | 'green' | 'red'
 }) {
   const cls = {
-    gray:  'bg-gray-100 text-gray-600',
-    blue:  'bg-blue-100 text-blue-700',
-    green: 'bg-green-100 text-green-700',
-    red:   'bg-red-100 text-red-700',
-  }[colour]
+    slate:  'bg-slate-500/15 text-slate-400',
+    indigo: 'bg-indigo-500/15 text-indigo-400',
+    green:  'bg-green-500/15 text-green-400',
+    red:    'bg-red-500/15 text-red-400',
+  }[color]
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${cls}`}>
-      {label}
-      <span className="font-bold">{value}</span>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cls}`}>
+      {label} <span className="font-bold">{value}</span>
     </span>
+  )
+}
+
+function ListView({ tasks, isAdmin, onEdit }: {
+  tasks: Task[]
+  isAdmin: boolean
+  onEdit: (task: Task) => void
+}) {
+  return (
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
+      <GlassPanel className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/5">
+                {['Task', 'Assignee', 'Status', 'Priority', 'Due Date', ...(isAdmin ? ['Actions'] : [])].map((h) => (
+                  <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tasks.map((task) => (
+                <motion.tr
+                  key={task._id}
+                  variants={staggerItem}
+                  className="border-b border-white/3 hover:bg-white/3 transition-colors group"
+                >
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2">
+                      {task.isOverdue && <span className="text-red-400 text-xs">⚠</span>}
+                      <span className="text-sm font-medium text-slate-200 max-w-[200px] truncate">
+                        {task.title}
+                      </span>
+                    </div>
+                    {task.description && (
+                      <p className="text-xs text-slate-600 mt-0.5 truncate max-w-[200px]">
+                        {task.description}
+                      </p>
+                    )}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <Avatar name={task.assignedTo.name} size="xs" showName />
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <StatusBadge status={task.status} />
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <PriorityBadge level={task.priorityLevel} />
+                  </td>
+                  <td className={`px-5 py-3.5 text-xs font-medium ${task.isOverdue ? 'text-red-400' : 'text-slate-500'}`}>
+                    {new Date(task.dueDate).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </td>
+                  {isAdmin && (
+                    <td className="px-5 py-3.5">
+                      <button
+                        type="button"
+                        onClick={() => onEdit(task)}
+                        className="text-xs text-violet-400 hover:text-violet-300 font-medium opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  )}
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+          {tasks.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 text-slate-600">
+              <div className="text-4xl mb-3">📋</div>
+              <p className="text-sm font-medium">No tasks yet</p>
+            </div>
+          )}
+        </div>
+      </GlassPanel>
+    </motion.div>
   )
 }
