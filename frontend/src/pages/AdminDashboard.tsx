@@ -5,7 +5,6 @@ import { getProjects } from '../api/projects'
 import { getTasks } from '../api/tasks'
 import { getUsers, type UserSummary } from '../api/users'
 import type { Project, Task } from '../types'
-import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { PremiumStatCard } from '../components/ui/PremiumStatCard'
 import { GlassPanel } from '../components/ui/GlassPanel'
@@ -18,7 +17,6 @@ import { PageSkeleton } from '../components/ui/SkeletonLoader'
 import { staggerContainer, staggerItem, fadeInUp } from '../animations/variants'
 
 export function AdminDashboard() {
-  const { user: _user } = useAuth()
   const { showToast } = useToast()
 
   const [projects, setProjects] = useState<Project[]>([])
