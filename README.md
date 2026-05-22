@@ -6,6 +6,22 @@ A full-stack collaborative task management application with role-based access co
 
 ---
 
+## 🚀 Live Demo
+
+| | URL |
+|---|---|
+| **Frontend** | https://raliwaytaskmanager-production-5a27.up.railway.app/ |
+| **Backend API** | https://raliwaytaskmanager-production.up.railway.app |
+
+### Demo Credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Admin** | admin@example.com | Admin1234! |
+| **Member** | member@example.com | Member1234! |
+
+---
+
 ## Architecture
 
 ### System Overview

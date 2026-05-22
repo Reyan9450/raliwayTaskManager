@@ -2,7 +2,22 @@
 
 A full-stack collaborative task management application with role-based access control, Kanban board with drag-and-drop, smart priority scoring, member task tracking, and a statistics dashboard.
 
-**Stack**: Node.js + Express + MongoDB · React + Vite + Tailwind CSS · JWT + bcrypt · dnd-kit · Recharts
+Stack: Node.js + Express + MongoDB · React + Vite + Tailwind CSS · JWT + bcrypt · dnd-kit · Recharts
+
+---
+
+LIVE DEMO
+---------
+
+Frontend : https://raliwaytaskmanager-production-5a27.up.railway.app/
+Backend  : https://raliwaytaskmanager-production.up.railway.app
+
+Demo Credentials:
+
+  Role    | Email                | Password
+  --------|----------------------|-----------
+  Admin   | admin@example.com    | Admin1234!
+  Member  | member@example.com   | Member1234!
 
 ---
 
